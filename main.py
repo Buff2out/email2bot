@@ -1,7 +1,7 @@
 import telebot
 
 TOKEN = "5259385883:AAFm-4DYkD8wEznwoSfyY9GLD9u5hdvrgg0"
-
+gmailRef = "https://mail.google.com/"
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(content_types=['text'])
