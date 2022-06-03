@@ -8,7 +8,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 TOKEN = "5259385883:AAFm-4DYkD8wEznwoSfyY9GLD9u5hdvrgg0"
-CLIENT_FILE = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
+CLIENT_FILE = "desktopClient.json"
+CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
 bot = telebot.TeleBot(TOKEN)
@@ -27,8 +28,7 @@ def try_auth():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                CLIENT_FILE, SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -62,5 +62,6 @@ def get_text_messages(message):
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
+
 
 bot.polling(none_stop=True, interval=0)
