@@ -10,6 +10,7 @@ from googleapiclient.errors import HttpError
 TOKEN = "5259385883:AAFm-4DYkD8wEznwoSfyY9GLD9u5hdvrgg0"
 CLIENT_FILE = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
+SCOPES = [GMAIL_REF]
 bot = telebot.TeleBot(TOKEN)
 def try_auth():
     """Shows basic usage of the Gmail API.
@@ -27,7 +28,7 @@ def try_auth():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                CLIENT_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -55,6 +56,7 @@ def try_auth():
 def get_text_messages(message):
     if message.text == "Привет":
         bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
+        try_auth()
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши 'Привет'")
     else:
