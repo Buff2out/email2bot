@@ -8,7 +8,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 TOKEN = "5259385883:AAFm-4DYkD8wEznwoSfyY9GLD9u5hdvrgg0"
-CLIENT_FILE = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
+CLIENT_FILE = "desktopClient.json"
+CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
 bot = telebot.TeleBot(TOKEN)
@@ -20,8 +21,8 @@ def try_auth():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(CLIENT_FILE):
+        creds = Credentials.from_authorized_user_file(CLIENT_FILE, SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -31,7 +32,7 @@ def try_auth():
                 CLIENT_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(CLIENT_FILE, 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -62,5 +63,6 @@ def get_text_messages(message):
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
+
 
 bot.polling(none_stop=True, interval=0)
