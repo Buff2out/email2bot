@@ -12,6 +12,7 @@ CLIENT_FILE = "desktopClient.json"
 CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
+service = False
 bot = telebot.TeleBot(TOKEN)
 def try_auth():
     """Shows basic usage of the Gmail API.
@@ -65,10 +66,15 @@ def search_messages(service, query):
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "/auth":
+        global service
         service = try_auth()
-        bot.send_message(message.from_user.id, "Функция авторизации сработала")
+        bot.send_message(message.from_user.id, "Функция авторизации сработала, введите /find + ключевой текст или слово чтобы найти сообщение:")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
+    elif service and message.text[0:5] == "/find":
+        msgs = search_messages(service, message.text[5:])
+        for msg in msgs:
+            bot.send_message(message.from_user.id, str(type(msg)))
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
