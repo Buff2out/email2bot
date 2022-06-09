@@ -52,11 +52,21 @@ def try_auth():
         print(f'An error occurred: {error}')
 
 
+def search_messages(service, query):
+    result = service.users().messages().list(userId='me',q=query).execute()
+    messages = [ ]
+    
+    return messages
+
+
+
+
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "/auth":
-        bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
         try_auth()
+        bot.send_message(message.from_user.id, "Функция авторизации сработала")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     else:
