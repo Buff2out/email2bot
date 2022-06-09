@@ -37,15 +37,9 @@ def try_auth():
     try:
         # Call the Gmail API
         service = build('gmail', 'v1', credentials=creds)
-        results = service.users().labels().list(userId='me').execute()
-        labels = results.get('labels', [])
-
-        if not labels:
-            print('No labels found.')
-            return
-        print('Labels:')
-        for label in labels:
-            print(label['name'])
+        # results = service.users().labels().list(userId='me').execute()
+        # labels = results.get('labels', [])
+        return service
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
@@ -71,7 +65,7 @@ def search_messages(service, query):
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "/auth":
-        try_auth()
+        service = try_auth()
         bot.send_message(message.from_user.id, "Функция авторизации сработала")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
