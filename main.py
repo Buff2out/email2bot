@@ -72,9 +72,10 @@ def get_text_messages(message):
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     elif service and message.text[0:5] == "/find":
-        msgs = search_messages(service, message.text[5:])
+        msgs = search_messages(service, message.text[6:])
         for msg in msgs:
-            bot.send_message(message.from_user.id, str(type(msg)))
+            for ms_0 in msg:
+                bot.send_message(message.from_user.id, ms_0)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
