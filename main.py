@@ -54,11 +54,11 @@ def try_auth():
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    if message.text == "Привет":
+    if message.text == "/auth":
         bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
         try_auth()
     elif message.text == "/help":
-        bot.send_message(message.from_user.id, "Напиши 'Привет'")
+        bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
