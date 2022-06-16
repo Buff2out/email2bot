@@ -73,12 +73,12 @@ def parse_parts(service, parts, folder_name, message):
 
 def read_message(service, message):
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
-
     payload = msg['payload']
     headers = payload.get("headers")
-
+    parts = payload.get("parts")
+    folder_name = "email"
+    has_subject = False
     if headers:
-        # this section prints email basic info & creates a folder for the email
         for header in headers:
             name = header.get("name")
             value = header.get("value")
@@ -86,6 +86,27 @@ def read_message(service, message):
                 print("From:", value)
             if name.lower() == "to":
                 print("To:", value)
+            if name.lower() == "subject":
+                has_subject = True
+                folder_name = clean(value)
+                folder_counter = 0
+                while os.path.isdir(folder_name):
+                    folder_counter += 1
+                    if folder_name[-1].isdigit() and folder_name[-2] == "_":
+                        folder_name = f"{folder_name[:-2]}_{folder_counter}"
+                    elif folder_name[-2:].isdigit() and folder_name[-3] == "_":
+                        folder_name = f"{folder_name[:-3]}_{folder_counter}"
+                    else:
+                        folder_name = f"{folder_name}_{folder_counter}"
+                os.mkdir(folder_name)
+                print("Subject:", value)
+            if name.lower() == "date":
+                print("Date:", value)
+    if not has_subject:
+        if not os.path.isdir(folder_name):
+            os.mkdir(folder_name)
+    parse_parts(service, parts, folder_name, message)
+    print("="*50)
 
 
 
