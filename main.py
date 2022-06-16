@@ -12,6 +12,7 @@ CLIENT_FILE = "desktopClient.json"
 CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
+service = False
 bot = telebot.TeleBot(TOKEN)
 def try_auth():
     """Shows basic usage of the Gmail API.
@@ -37,15 +38,9 @@ def try_auth():
     try:
         # Call the Gmail API
         service = build('gmail', 'v1', credentials=creds)
-        results = service.users().labels().list(userId='me').execute()
-        labels = results.get('labels', [])
-
-        if not labels:
-            print('No labels found.')
-            return
-        print('Labels:')
-        for label in labels:
-            print(label['name'])
+        # results = service.users().labels().list(userId='me').execute()
+        # labels = results.get('labels', [])
+        return service
 
     except HttpError as error:
         # TODO(developer) - Handle errors from gmail API.
@@ -76,13 +71,39 @@ def parse_parts(service, parts, folder_name, message):
 
 
 
+def read_message(service, message):
+    pass
+
+
+
+def search_messages(service, query):
+    result = service.users().messages().list(userId='me',q=query).execute()
+    messages = [ ]
+    if 'messages' in result:
+        messages.extend(result['messages'])
+    while 'nextPageToken' in result:
+        page_token = result['nextPageToken']
+        result = service.users().messages().list(userId='me',q=query, pageToken=page_token).execute()
+        if 'messages' in result:
+            messages.extend(result['messages'])
+    return messages
+
+
+
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "/auth":
+        global service
         service = try_auth()
-        bot.send_message(message.from_user.id, "Функция авторизации сработала")
+        bot.send_message(message.from_user.id, "Функция авторизации сработала, введите /find + ключевой текст или слово чтобы найти сообщение:")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
+    elif service and message.text[0:5] == "/find":
+        msgs = search_messages(service, message.text[6:])
+        for msg in msgs:
+            for ms_0 in msg:
+                bot.send_message(message.from_user.id, ms_0)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
         print("user sended")
