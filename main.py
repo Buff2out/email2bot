@@ -63,7 +63,7 @@ def get_size_format(b, factor=1024, suffix="B"):
 
 
 def clean(text):
-    pass
+    return "".join(c if c.isalnum() else "_" for c in text)
 
 
 
