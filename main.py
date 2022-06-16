@@ -66,6 +66,10 @@ def clean(text):
     return "".join(c if c.isalnum() else "_" for c in text)
 
 
+def parse_parts(service, parts, folder_name, message):
+    pass
+
+
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
