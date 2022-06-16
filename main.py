@@ -64,6 +64,7 @@ def clean(text):
 
 
 def parse_parts(service, parts, folder_name, message):
+    resultt = ""
     if parts:
         for part in parts:
             filename = part.get("filename")
@@ -77,12 +78,12 @@ def parse_parts(service, parts, folder_name, message):
             if mimeType == "text/plain":
                 if data:
                     text = urlsafe_b64decode(data).decode()
-                    print(text)
+                    resultt += text + "\n"
             elif mimeType == "text/html":
                 if not filename:
                     filename = "index.html"
                 filepath = os.path.join(folder_name, filename)
-                print("Saving HTML to", filepath)
+                resultt += "Saving HTML to " + filepath + "\n" # Криво, конкат но пока для стабильности работы без f-строк
                 with open(filepath, "wb") as f:
                     f.write(urlsafe_b64decode(data))
             else:
@@ -91,7 +92,7 @@ def parse_parts(service, parts, folder_name, message):
                     part_header_value = part_header.get("value")
                     if part_header_name == "Content-Disposition":
                         if "attachment" in part_header_value:
-                            print("Saving the file:", filename, "size:", get_size_format(file_size))
+                            resultt += "Saving the file: " + filename + "size: " + get_size_format(file_size) + "\n"
                             attachment_id = body.get("attachmentId")
                             attachment = service.users().messages() \
                                         .attachments().get(id=attachment_id, userId='me', messageId=message['id']).execute()
@@ -100,6 +101,7 @@ def parse_parts(service, parts, folder_name, message):
                             if data:
                                 with open(filepath, "wb") as f:
                                     f.write(urlsafe_b64decode(data))
+    return resultt
 
 
 def search_messages(service, query):
@@ -117,6 +119,7 @@ def search_messages(service, query):
 
 
 def read_message(service, message):
+    res = ""
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
     payload = msg['payload']
     headers = payload.get("headers")
@@ -128,9 +131,9 @@ def read_message(service, message):
             name = header.get("name")
             value = header.get("value")
             if name.lower() == 'from':
-                print("From:", value)
+                res += "From:" + value + "\n"
             if name.lower() == "to":
-                print("To:", value)
+                res += "To:" + value + "\n"
             if name.lower() == "subject":
                 has_subject = True
                 folder_name = clean(value)
@@ -144,14 +147,15 @@ def read_message(service, message):
                     else:
                         folder_name = f"{folder_name}_{folder_counter}"
                 os.mkdir(folder_name)
-                print("Subject:", value)
+                res += "Subject:" + value + "\n"
             if name.lower() == "date":
-                print("Date:", value)
+                res += "Date:" + value + "\n"
     if not has_subject:
         if not os.path.isdir(folder_name):
             os.mkdir(folder_name)
-    parse_parts(service, parts, folder_name, message)
-    print("="*50)
+    res = parse_parts(service, parts, folder_name, message) + "\n"
+    res += "="*50 + "\n"
+    return res
 
 
 
@@ -165,13 +169,12 @@ def get_text_messages(message):
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     elif service and message.text[0:5] == "/find":
-        msgs = search_messages(service, message.text[6:])
-        for msg in msgs:
-            for ms_0 in msg:
-                bot.send_message(message.from_user.id, ms_0)
+        results = search_messages(service, message.text[6:])
+        for msg in results:
+            res = read_message(service, msg)
+            bot.send_message(message.from_user.id, res)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
-        print("user sended")
 
 
 bot.polling(none_stop=True, interval=0)
