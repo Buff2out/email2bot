@@ -72,7 +72,20 @@ def parse_parts(service, parts, folder_name, message):
 
 
 def read_message(service, message):
-    pass
+    msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
+
+    payload = msg['payload']
+    headers = payload.get("headers")
+
+    if headers:
+        # this section prints email basic info & creates a folder for the email
+        for header in headers:
+            name = header.get("name")
+            value = header.get("value")
+            if name.lower() == 'from':
+                print("From:", value)
+            if name.lower() == "to":
+                print("To:", value)
 
 
 
