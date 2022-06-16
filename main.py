@@ -1,6 +1,8 @@
 import telebot
 import os.path
 
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -62,12 +64,55 @@ def clean(text):
 
 
 def parse_parts(service, parts, folder_name, message):
-    msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
-    payload = msg['payload']
-    headers = payload.get("headers")
-    parts = payload.get("parts")
-    folder_name = "email"
-    has_subject = False
+    if parts:
+        for part in parts:
+            filename = part.get("filename")
+            mimeType = part.get("mimeType")
+            body = part.get("body")
+            data = body.get("data")
+            file_size = body.get("size")
+            part_headers = part.get("headers")
+            if part.get("parts"):
+                parse_parts(service, part.get("parts"), folder_name, message)
+            if mimeType == "text/plain":
+                if data:
+                    text = urlsafe_b64decode(data).decode()
+                    print(text)
+            elif mimeType == "text/html":
+                if not filename:
+                    filename = "index.html"
+                filepath = os.path.join(folder_name, filename)
+                print("Saving HTML to", filepath)
+                with open(filepath, "wb") as f:
+                    f.write(urlsafe_b64decode(data))
+            else:
+                for part_header in part_headers:
+                    part_header_name = part_header.get("name")
+                    part_header_value = part_header.get("value")
+                    if part_header_name == "Content-Disposition":
+                        if "attachment" in part_header_value:
+                            print("Saving the file:", filename, "size:", get_size_format(file_size))
+                            attachment_id = body.get("attachmentId")
+                            attachment = service.users().messages() \
+                                        .attachments().get(id=attachment_id, userId='me', messageId=message['id']).execute()
+                            data = attachment.get("data")
+                            filepath = os.path.join(folder_name, filename)
+                            if data:
+                                with open(filepath, "wb") as f:
+                                    f.write(urlsafe_b64decode(data))
+
+
+def search_messages(service, query):
+    result = service.users().messages().list(userId='me',q=query).execute()
+    messages = [ ]
+    if 'messages' in result:
+        messages.extend(result['messages'])
+    while 'nextPageToken' in result:
+        page_token = result['nextPageToken']
+        result = service.users().messages().list(userId='me',q=query, pageToken=page_token).execute()
+        if 'messages' in result:
+            messages.extend(result['messages'])
+    return messages
 
 
 
@@ -107,20 +152,6 @@ def read_message(service, message):
             os.mkdir(folder_name)
     parse_parts(service, parts, folder_name, message)
     print("="*50)
-
-
-
-def search_messages(service, query):
-    result = service.users().messages().list(userId='me',q=query).execute()
-    messages = [ ]
-    if 'messages' in result:
-        messages.extend(result['messages'])
-    while 'nextPageToken' in result:
-        page_token = result['nextPageToken']
-        result = service.users().messages().list(userId='me',q=query, pageToken=page_token).execute()
-        if 'messages' in result:
-            messages.extend(result['messages'])
-    return messages
 
 
 
