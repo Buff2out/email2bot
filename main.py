@@ -67,7 +67,12 @@ def clean(text):
 
 
 def parse_parts(service, parts, folder_name, message):
-    pass
+    msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
+    payload = msg['payload']
+    headers = payload.get("headers")
+    parts = payload.get("parts")
+    folder_name = "email"
+    has_subject = False
 
 
 
