@@ -175,6 +175,7 @@ def get_text_messages(message):
             bot.send_message(message.from_user.id, res)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
+        print(message.text)
 
 
 bot.polling(none_stop=True, interval=0)
