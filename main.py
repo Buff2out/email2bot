@@ -55,13 +55,18 @@ def try_auth():
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "/auth":
+        global service
         service = try_auth()
-        bot.send_message(message.from_user.id, "Функция авторизации сработала")
+        bot.send_message(message.from_user.id, "Функция авторизации сработала, введите /find + ключевой текст или слово чтобы найти сообщение:")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
+    elif service and message.text[0:5] == "/find":
+        results = search_messages(service, message.text[6:])
+        for msg in results:
+            res = read_message(service, msg)
+            bot.send_message(message.from_user.id, res)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
-        print("user sended")
 
 
 bot.polling(none_stop=True, interval=0)
