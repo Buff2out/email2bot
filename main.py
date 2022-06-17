@@ -16,15 +16,18 @@ GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
 service = False
 bot = telebot.TeleBot(TOKEN)
-def try_auth():
+def try_auth(userid):
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
     """
+    if not os.path.exists(f'database//{userid}//cacheEmails'):
+        os.makedirs(f'database//{userid}//cacheEmails')
+    
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
+    if os.path.exists(f'database//{userid}//token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
@@ -34,7 +37,7 @@ def try_auth():
             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(f'database//{userid}//token.json', 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -143,7 +146,7 @@ def read_message(service, message):
                     if folder_name[-1].isdigit() and folder_name[-2] == "_":
                         folder_name = f"{folder_name[:-2]}_{folder_counter}"
                     elif folder_name[-2:].isdigit() and folder_name[-3] == "_":
-                        folder_name = f"{folder_name[:-3]}_{folder_counter}"
+                        folder_name = f".//database//{userid}//{folder_name[:-3]}_{folder_counter}"
                     else:
                         folder_name = f"{folder_name}_{folder_counter}"
                 os.mkdir(folder_name)
@@ -164,7 +167,7 @@ def read_message(service, message):
 def get_text_messages(message):
     if message.text == "/auth":
         global service
-        service = try_auth()
+        service = try_auth(message['from_user']['id'])
         bot.send_message(message.from_user.id, "Функция авторизации сработала, введите /find + ключевой текст или слово чтобы найти сообщение:")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
