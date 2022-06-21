@@ -16,6 +16,7 @@ GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
 service = False
 bot = telebot.TeleBot(TOKEN)
+
 def try_auth(userid):
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
@@ -52,14 +53,12 @@ def try_auth(userid):
         print(f'An error occurred: {error}')
 
 
-
 def get_size_format(b, factor=1024, suffix="B"):
     for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
         if b < factor:
             return f"{b:.2f}{unit}{suffix}"
         b /= factor
     return f"{b:.2f}Y{suffix}"
-
 
 
 def clean(text):
@@ -140,9 +139,7 @@ def read_message(userid, service, message):
                 res += "To:" + value + "\n"
             if name.lower() == "subject":
                 has_subject = True
-                print(value, folder_name)
                 folder_name = clean(value)
-                print(value, folder_name)
                 folder_counter = 0
                 while os.path.isdir(f"{folder_path}//{folder_name}"):
                     folder_counter += 1
@@ -159,7 +156,7 @@ def read_message(userid, service, message):
     if not has_subject:
         if not os.path.isdir(f"{folder_path}//{folder_name}"):
             os.makedirs(f"{folder_path}//{folder_name}")
-    res = parse_parts(service, parts, f"{folder_path}//{folder_name}", message) + "\n"
+    res += parse_parts(service, parts, f"{folder_path}//{folder_name}", message) + "\n"
     res += "="*50 + "\n"
     return res
 
@@ -177,7 +174,7 @@ def get_text_messages(message):
     elif service and message.text[0:5] == "/find":
         results = search_messages(service, message.text[6:])
         for msg in results:
-            print(msg)
+            # print(msg)
             res = read_message(message.from_user.id, service, msg)
             bot.send_message(message.from_user.id, res)
     else:
