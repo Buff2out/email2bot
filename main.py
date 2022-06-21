@@ -172,13 +172,13 @@ def get_text_messages(message):
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     elif service and message.text[0:5] == "/find":
-        results = search_messages(message.from_user.id, service, message.text[6:])
+        results = search_messages(service, message.text[6:])
         for msg in results:
             print(msg)
-            res = read_message(service, msg)
+            res = read_message(message.from_user.id, service, msg)
             bot.send_message(message.from_user.id, res)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
-bot.polling(none_stop=True, interval=500)
+bot.polling(none_stop=True, interval=1)
