@@ -119,7 +119,6 @@ def search_messages(service, query):
     return messages
 
 
-
 def read_message(userid, service, message):
     res = ""
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
@@ -159,8 +158,6 @@ def read_message(userid, service, message):
     res += parse_parts(service, parts, f"{folder_path}//{folder_name}", message) + "\n"
     res += "="*50 + "\n"
     return res
-
-
 
 
 @bot.message_handler(content_types=['text'])
