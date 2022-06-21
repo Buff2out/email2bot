@@ -127,7 +127,7 @@ def read_message(userid, service, message):
     payload = msg['payload']
     headers = payload.get("headers")
     parts = payload.get("parts")
-    folder_name = f"database//{userid}//cacheEmails"
+    folder_name = f"cacheEmails"
     folder_path = f"database//{userid}//cacheEmails"
     has_subject = False
     if headers:
@@ -144,22 +144,22 @@ def read_message(userid, service, message):
                 folder_name = clean(value)
                 print(value, folder_name)
                 folder_counter = 0
-                while os.path.isdir(folder_name):
+                while os.path.isdir(f"{folder_path}//{folder_name}"):
                     folder_counter += 1
                     if folder_name[-1].isdigit() and folder_name[-2] == "_":
-                        folder_name = f"{folder_path}//{folder_name[:-2]}_{folder_counter}"
+                        folder_name = f"{folder_name[:-2]}_{folder_counter}"
                     elif folder_name[-2:].isdigit() and folder_name[-3] == "_":
-                        folder_name = f"{folder_path}//{folder_name[:-3]}_{folder_counter}"
+                        folder_name = f"{folder_name[:-3]}_{folder_counter}"
                     else:
-                        folder_name = f"{folder_path}//{folder_name}_{folder_counter}"
-                os.makedirs(f"{folder_name}")
+                        folder_name = f"{folder_name}_{folder_counter}"
+                os.makedirs(f"{folder_path}//{folder_name}")
                 res += "Subject:" + value + "\n"
             if name.lower() == "date":
                 res += "Date:" + value + "\n"
     if not has_subject:
-        if not os.path.isdir(f"{folder_path}//folder_name"):
-            os.makedirs(folder_name)
-    res = parse_parts(service, parts, folder_name, message) + "\n"
+        if not os.path.isdir(f"{folder_path}//{folder_name}"):
+            os.makedirs(f"{folder_path}//{folder_name}")
+    res = parse_parts(service, parts, f"{folder_path}//{folder_name}", message) + "\n"
     res += "="*50 + "\n"
     return res
 
