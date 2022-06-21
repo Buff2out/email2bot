@@ -11,7 +11,7 @@ from googleapiclient.errors import HttpError
 
 TOKEN = "5259385883:AAFm-4DYkD8wEznwoSfyY9GLD9u5hdvrgg0"
 CLIENT_FILE = "desktopClient.json"
-CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
+# CLIENT_FILE_WEB = "client_secret_1268668511-7ohtd1abi7t4om9gg8mj8pb6vt5darl9.apps.googleusercontent.com.json"
 GMAIL_REF = "https://mail.google.com/"
 SCOPES = [GMAIL_REF]
 service = False
@@ -127,7 +127,7 @@ def read_message(userid, service, message):
     payload = msg['payload']
     headers = payload.get("headers")
     parts = payload.get("parts")
-    folder_name = "email"
+    folder_name = "database//{userid}//email"
     has_subject = False
     if headers:
         for header in headers:
@@ -144,19 +144,19 @@ def read_message(userid, service, message):
                 while os.path.isdir(folder_name):
                     folder_counter += 1
                     if folder_name[-1].isdigit() and folder_name[-2] == "_":
-                        folder_name = f"{folder_name[:-2]}_{folder_counter}"
+                        folder_name = f"database//{userid}//{folder_name[:-2]}_{folder_counter}"
                     elif folder_name[-2:].isdigit() and folder_name[-3] == "_":
-                        folder_name = f".//database//{userid}//{folder_name[:-3]}_{folder_counter}"
+                        folder_name = f"database//{userid}//{folder_name[:-3]}_{folder_counter}"
                     else:
-                        folder_name = f"{folder_name}_{folder_counter}"
-                os.mkdir(folder_name)
+                        folder_name = f"database//{userid}//{folder_name}_{folder_counter}"
+                os.mkdir("database//{userid}//" + folder_name)
                 res += "Subject:" + value + "\n"
             if name.lower() == "date":
                 res += "Date:" + value + "\n"
     if not has_subject:
         if not os.path.isdir(folder_name):
-            os.mkdir(folder_name)
-    res = parse_parts(service, parts, folder_name, message) + "\n"
+            os.mkdir("database//{userid}//" + folder_name)
+    res = parse_parts(service, parts, "database//{userid}//" + folder_name, message) + "\n"
     res += "="*50 + "\n"
     return res
 
@@ -174,10 +174,11 @@ def get_text_messages(message):
     elif service and message.text[0:5] == "/find":
         results = search_messages(message.from_user.id, service, message.text[6:])
         for msg in results:
+            print(msg)
             res = read_message(service, msg)
             bot.send_message(message.from_user.id, res)
     else:
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=500)
