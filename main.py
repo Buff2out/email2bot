@@ -127,7 +127,7 @@ def read_message(userid, service, message):
     payload = msg['payload']
     headers = payload.get("headers")
     parts = payload.get("parts")
-    folder_name = "database//{userid}//email"
+    folder_name = f"database//{userid}//email"
     has_subject = False
     if headers:
         for header in headers:
