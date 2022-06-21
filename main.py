@@ -121,7 +121,7 @@ def search_messages(service, query):
 
 
 
-def read_message(service, message):
+def read_message(userid, service, message):
     res = ""
     msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
     payload = msg['payload']
@@ -167,12 +167,12 @@ def read_message(service, message):
 def get_text_messages(message):
     if message.text == "/auth":
         global service
-        service = try_auth(message['from_user']['id'])
+        service = try_auth(message.from_user.id)
         bot.send_message(message.from_user.id, "Функция авторизации сработала, введите /find + ключевой текст или слово чтобы найти сообщение:")
     elif message.text == "/help":
         bot.send_message(message.from_user.id, "Напиши '/auth' для аутентификации")
     elif service and message.text[0:5] == "/find":
-        results = search_messages(service, message.text[6:])
+        results = search_messages(message.from_user.id, service, message.text[6:])
         for msg in results:
             res = read_message(service, msg)
             bot.send_message(message.from_user.id, res)
